@@ -31,7 +31,11 @@ body {
 }
 
 h1 { font-size: 27px; }
-#message { min-height: 48px; line-height: 1.5; }
+
+#message {
+  min-height: 48px;
+  line-height: 1.5;
+}
 
 .board {
   display: flex;
@@ -63,6 +67,11 @@ h1 { font-size: 27px; }
   box-shadow: 0 5px 0 #e6c0d0;
 }
 
+.card:disabled {
+  opacity: 1;
+  cursor: default;
+}
+
 .main-button {
   width: 100%;
   padding: 15px;
@@ -88,50 +97,52 @@ h1 { font-size: 27px; }
   <h1>Encontra o Coração ❤️</h1>
   <p id="level">Nível 1 de 5</p>
   <p id="message">
-    Memoriza as cartas! Depois, segue o Coração.
+    Memoriza onde está o Coração. Depois segue a carta!
   </p>
 
   <div class="board" id="board">
-    <button class="card revealed">❤️</button>
-    <button class="card revealed">❄️</button>
-    <button class="card revealed">☀️</button>
+    <button class="card" data-symbol="❤️" disabled>❤️</button>
+    <button class="card" data-symbol="❄️" disabled>❄️</button>
+    <button class="card" data-symbol="☀️" disabled>☀️</button>
   </div>
 
-  <button class="main-button" id="start">Começar a baralhar!</button>
-  <button class="main-button hidden" id="next">Próximo nível ❤️</button>
+  <button class="main-button" id="start">
+    Começar a baralhar!
+  </button>
+
+  <button class="main-button hidden" id="next">
+    Próximo nível ❤️
+  </button>
+
   <p class="small">Feito especialmente para ti 💗</p>
 </main>
 
 <script>
 const game = document.getElementById("game");
 const board = document.getElementById("board");
-const cards = [...document.querySelectorAll(".card")];
 const message = document.getElementById("message");
 const levelText = document.getElementById("level");
 const startButton = document.getElementById("start");
 const nextButton = document.getElementById("next");
 
+let cardOrder = [...document.querySelectorAll(".card")];
 let level = 1;
 let busy = false;
 let won = false;
-let order = ["❤️", "❄️", "☀️"];
+let started = false;
 
-function drawCards() {
-  cards.forEach((card, i) => {
-    card.textContent = order[i];
-  });
+function hideCard(card) {
+  card.textContent = "";
+  card.classList.remove("revealed");
 }
 
-function hideSymbols() {
-  cards.forEach(card => {
-    card.textContent = "";
-    card.classList.remove("revealed");
-  });
+function hideAllCards() {
+  cardOrder.forEach(hideCard);
 }
 
-function showSymbols() {
-  cards.forEach((card, i) => {
-    card.textContent = order[i];
+function showAllCards() {
+  cardOrder.forEach(card => {
+    card.textContent = card.dataset.symbol;
     card.classList.add("revealed");
   });
 }
@@ -140,9 +151,9 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function moveCards(a, b, speed) {
-  const first = cards[a];
-  const second = cards[b];
+async function swapCards(a, b, speed) {
+  const first = cardOrder[a];
+  const second = cardOrder[b];
 
   const firstRect = first.getBoundingClientRect();
   const secondRect = second.getBoundingClientRect();
@@ -156,61 +167,75 @@ async function moveCards(a, b, speed) {
 
   await sleep(speed);
 
-  [order[a], order[b]] = [order[b], order[a]];
+  // Troca os próprios elementos de posição.
+  // Os símbolos continuam escondidos.
+  [cardOrder[a], cardOrder[b]] =
+    [cardOrder[b], cardOrder[a]];
 
-  first.style.transition = "none";
-  second.style.transition = "none";
-  first.style.transform = "none";
-  second.style.transform = "none";
+  cardOrder.forEach(card => board.appendChild(card));
 
-  drawCards();
-  hideSymbols();
+  cardOrder.forEach(card => {
+    card.style.transition = "none";
+    card.style.transform = "none";
+  });
 
   void board.offsetWidth;
+
+  cardOrder.forEach(card => {
+    card.style.transition = "transform 0.4s ease";
+  });
+
+  await sleep(60);
 }
 
 async function shuffle() {
-  if (busy || won) return;
+  if (busy || won || started) return;
 
   busy = true;
+  started = true;
+
   startButton.disabled = true;
-  cards.forEach(card => card.disabled = true);
+  cardOrder.forEach(card => card.disabled = true);
 
-  message.textContent = "Segue o Coração com os olhos! ❤️";
+  // As cartas ficam viradas para baixo antes de começar.
+  hideAllCards();
 
-  // Esconde os símbolos durante o baralhamento.
-  hideSymbols();
+  message.textContent = "Segue a carta do Coração! ❤️";
 
-  const swaps = 2 + level * 2;
-  const speed = Math.max(280, 550 - level * 40);
+  const swaps = 3 + level * 2;
+  const speed = Math.max(280, 500 - level * 35);
 
   for (let i = 0; i < swaps; i++) {
-    let a = Math.floor(Math.random() * 3);
-    let b = Math.floor(Math.random() * 3);
+    // Trocas entre cartas vizinhas para facilitar
+    // acompanhar os movimentos.
+    const a = Math.floor(Math.random() * 2);
+    const b = a + 1;
 
-    while (a === b) {
-      b = Math.floor(Math.random() * 3);
-    }
-
-    await moveCards(a, b, speed);
+    await swapCards(a, b, speed);
     await sleep(120);
   }
 
-  // Os símbolos voltam a aparecer no fim.
-  showSymbols();
+  // IMPORTANTE: os símbolos NÃO voltam a aparecer.
+  // Só serão revelados depois de uma escolha.
+  message.textContent = "Em que carta está o Coração? ❤️";
 
-  message.textContent = "Onde está o Coração? Escolhe uma carta!";
-  cards.forEach(card => card.disabled = false);
+  cardOrder.forEach(card => card.disabled = false);
   busy = false;
 }
 
-cards.forEach((card, index) => {
-  card.addEventListener("click", () => {
-    if (busy || won) return;
+cardOrder.forEach(card => {
+  card.addEventListener("click", async () => {
+    if (busy || won || !started) return;
 
-    if (order[index] === "❤️") {
+    busy = true;
+    cardOrder.forEach(c => c.disabled = true);
+
+    // Revela apenas a carta escolhida.
+    card.textContent = card.dataset.symbol;
+    card.classList.add("revealed");
+
+    if (card.dataset.symbol === "❤️") {
       won = true;
-      cards.forEach(c => c.disabled = true);
 
       message.textContent = level === 5
         ? "Conseguiste chegar ao último nível! ❤️"
@@ -221,8 +246,18 @@ cards.forEach((card, index) => {
         : "Próximo nível ❤️";
 
       nextButton.classList.remove("hidden");
+      busy = false;
     } else {
-      message.textContent = "Quase! Tenta outra vez. Não perdes o nível ❤️";
+      message.textContent =
+        "Não é o Coração! Tenta outra carta ❤️";
+
+      await sleep(850);
+
+      // Volta a esconder a carta errada.
+      hideCard(card);
+
+      cardOrder.forEach(c => c.disabled = false);
+      busy = false;
     }
   });
 });
@@ -245,22 +280,36 @@ nextButton.addEventListener("click", () => {
 
   level++;
   won = false;
+  started = false;
+  busy = false;
 
-  order.sort(() => Math.random() - 0.5);
-  drawCards();
-  showSymbols();
+  // Baralha a disposição inicial para o novo nível.
+  for (let i = cardOrder.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [cardOrder[i], cardOrder[j]] =
+      [cardOrder[j], cardOrder[i]];
+  }
+
+  cardOrder.forEach(card => {
+    card.style.transition = "none";
+    card.style.transform = "none";
+    board.appendChild(card);
+  });
+
+  showAllCards();
 
   levelText.textContent = `Nível ${level} de 5`;
-  message.textContent = "Memoriza as cartas! ❤️";
+  message.textContent =
+    "Memoriza onde está o Coração. ❤️";
 
   nextButton.classList.add("hidden");
   startButton.disabled = false;
   startButton.textContent = "Começar a baralhar!";
 
-  cards.forEach(card => card.disabled = false);
+  cardOrder.forEach(card => card.disabled = true);
 });
 
-drawCards();
+showAllCards();
 </script>
 </body>
 </html>
