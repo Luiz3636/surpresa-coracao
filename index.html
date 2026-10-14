@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hambúrguer Clicker 🍔</title>
+
+<style>
+:root {
+    --orange: #ff8a24;
+    --yellow: #ffd45c;
+    --dark: #382116;
+    --cream: #fff5df;
+    --green: #5ca64b;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: Arial, Helvetica, sans-serif;
+    color: var(--dark);
+    background:
+        radial-gradient(circle at 20% 15%, #fff1c2 0, transparent 35%),
+        linear-gradient(135deg, #ffe4a3, #ffb45d);
+    text-align: center;
+    overflow-x: hidden;
+}
+
+header {
+    padding: 22px 12px 10px;
+}
+
+h1 {
+    font-size: clamp(28px, 6vw, 48px);
+    margin: 0;
+    font-weight: 900;
+    text-shadow: 2px 3px 0 #fff;
+}
+
+.subtitle {
+    margin-top: 8px;
+    color: #754323;
+}
+
+.container {
+    width: min(900px, 94%);
+    margin: auto;
+    padding-bottom: 35px;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.stat {
+    background: #fffaf0;
+    padding: 14px 5px;
+    border: 3px solid white;
+    border-radius: 18px;
+    box-shadow: 0 5px 0 #dca04f;
+}
+
+.stat small {
+    display: block;
+    font-weight: bold;
+    color: #96623a;
+    margin-bottom: 6px;
+}
+
+.stat strong {
+    font-size: clamp(17px, 4vw, 26px);
+}
+
+.burger-area {
+    position: relative;
+    padding: 12px 0 20px;
+}
+
+#burger {
+    width: clamp(190px, 55vw, 310px);
+    height: clamp(190px, 55vw, 310px);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle, #fff9dc, #ffd77c);
+    box-shadow: 0 12px 0 #dc9142, 0 18px 25px #9c5a2b55;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: transform .08s, box-shadow .08s;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+#burger:active {
+    transform: translateY(8px) scale(.96);
+    box-shadow: 0 4px 0 #dc9142, 0 8px 15px #9c5a2b55;
+}
+
+#burger svg {
+    width: 88%;
+    height: 88%;
+    overflow: visible;
+    pointer-events: none;
+}
+
+.hint {
+    font-weight: bold;
+    color: #754323;
+    margin: 20px 0 5px;
+}
+
+.progress-box {
+    background: #fffaf0;
+    padding: 15px;
+    border-radius: 18px;
+    margin: 15px 0 24px;
+    box-shadow: 0 5px 0 #dca04f;
+}
+
+.progress-label {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.progress-bg {
+    height: 22px;
+    border-radius: 20px;
+    background: #ead8b8;
+    overflow: hidden;
+    border: 2px solid #e2c18e;
+}
+
+#progress {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, #65c653, #b8ed55);
+    border-radius: 20px;
+    transition: width .2s;
+}
+
+.section-title {
+    font-size: 26px;
+    margin: 25px 0 5px;
+}
+
+.section-subtitle {
+    color: #754323;
+    margin-bottom: 18px;
+}
+
+#upgrades {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.upgrade {
+    background: #fffaf0;
+    border: 3px solid white;
+    border-radius: 18px;
+    padding: 15px 10px;
+    box-shadow: 0 5px 0 #dca04f;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+}
+
+.upgrade-icon {
+    font-size: 36px;
+}
+
+.upgrade h3 {
+    margin: 0;
+    font-size: 17px;
+}
+
+.upgrade p {
+    margin: 0;
+    font-size: 13px;
+    color: #79583e;
+    line-height: 1.4;
+}
+
+.buy {
+    width: 100%;
+    padding: 11px 5px;
+    border: none;
+    border-radius: 12px;
+    color: white;
+    background: var(--orange);
+    font-size: 14px;
+    font-weight: 900;
+    cursor: pointer;
+    box-shadow: 0 4px 0 #c65b11;
+}
+
+.buy:disabled {
+    background: #c9bca8;
+    box-shadow: 0 4px 0 #a99b87;
+    cursor: not-allowed;
+}
+
+footer {
+    margin: 30px 0 5px;
+    color: #79583e;
+    font-size: 12px;
+}
+
+#toast {
+    position: fixed;
+    top: 15px;
+    left: 50%;
+    transform: translate(-50%, -150%);
+    background: #382116;
+    color: white;
+    padding: 13px 22px;
+    border-radius: 15px;
+    z-index: 5;
+    font-weight: bold;
+    transition: transform .3s;
+    max-width: 90%;
+}
+
+#toast.show {
+    transform: translate(-50%, 0);
+}
+
+.float-text {
+    position: absolute;
+    pointer-events: none;
+    font-size: 25px;
+    font-weight: 900;
+    color: #e85d04;
+    text-shadow: 1px 2px white;
+    animation: floatUp .8s forwards;
+    z-index: 2;
+}
+
+@keyframes floatUp {
+    from {
+        opacity: 1;
+        transform: translateY(0) scale(.8);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-85px) scale(1.2);
+    }
+}
+
+#ending {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: #28140df2;
+    z-index: 10;
+}
+
+#ending.show {
+    display: flex;
+    animation: appear .4s;
+}
+
+.ending-card {
+    max-width: 470px;
+    width: 100%;
+    background: #fff1d1;
+    border: 5px solid #ff9d32;
+    border-radius: 28px;
+    padding: 25px 20px;
+    box-shadow: 0 0 40px #ff7a26aa;
+    animation: bounce .7s;
+}
+
+.ending-card .poop {
+    font-size: 85px;
+}
+
+.ending-card h2 {
+    font-size: 31px;
+    color: #d84b13;
+    margin: 10px 0;
+}
+
+.ending-card p {
+    line-height: 1.6;
+}
+
+#closeEnding, #reset {
+    border: none;
+    border-radius: 12px;
+    padding: 12px 20px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#closeEnding {
+    background: #ff8a24;
+    color: white;
+}
+
+#reset {
+    margin-top: 25px;
+    background: #73472c;
+    color: white;
+}
+
+@keyframes appear {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes bounce {
+    0% { transform: scale(.5); }
+    75% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+@media (max-width: 450px) {
+    .stats { gap: 6px; }
+    .stat { padding: 12px 2px; }
+    #upgrades { gap: 9px; }
+    .upgrade { padding: 12px 7px; }
+    .upgrade h3 { font-size: 15px; }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>🍔 Hambúrguer Clicker</h1>
+    <p class="subtitle">Clica no hambúrguer. Fica rico. Arrepende-te.</p>
+</header>
+
+<main class="container">
+
+    <section class="stats">
+        <div class="stat">
+            <small>🍔 CLIQUES</small>
+            <strong id="score">0</strong>
+        </div>
+        <div class="stat">
+            <small>⚡ POR CLIQUE</small>
+            <strong id="power">1</strong>
+        </div>
+        <div class="stat">
+            <small>🛠️ UPGRADES</small>
+            <strong id="upgradeCount">0</strong>
+        </div>
+    </section>
+
+    <div class="burger-area" id="burgerArea">
+        <button id="burger" aria-label="Clicar no hambúrguer">
+            <svg viewBox="0 0 300 300" role="img"
+                 aria-label="Um hambúrguer delicioso">
+                <ellipse cx="150" cy="258" rx="105" ry="17"
+                         fill="#9b5a27" opacity=".18"/>
+                <!-- Pão de cima -->
+                <path d="M43 133 C43 58 90 28 150 28
+                         C210 28 257 58 257 133 Z"
+                      fill="#eaa13d" stroke="#a95c1b" stroke-width="5"/>
+                <path d="M53 112 C65 65 101 43 150 42
+                         C199 43 235 65 247 112"
+                      fill="none" stroke="#ffd77b" stroke-width="9"
+                      stroke-linecap="round"/>
+                <!-- Sementes -->
+                <g fill="#fff0b5">
+                    <ellipse cx="105" cy="66" rx="5" ry="9"
+                             transform="rotate(-30 105 66)"/>
+                    <ellipse cx="145" cy="53" rx="5" ry="9"
+                             transform="rotate(15 145 53)"/>
+                    <ellipse cx="183" cy="65" rx="5" ry="9"
+                             transform="rotate(30 183 65)"/>
+                    <ellipse cx="216" cy="88" rx="5" ry="9"
+                             transform="rotate(-20 216 88)"/>
+                    <ellipse cx="80" cy="96" rx="5" ry="9"
+                             transform="rotate(25 80 96)"/>
+                    <ellipse cx="130" cy="91" rx="5" ry="9"
+                             transform="rotate(-15 130 91)"/>
+                    <ellipse cx="171" cy="96" rx="5" ry="9"
+                             transform="rotate(20 171 96)"/>
+                </g>
+                <!-- Alface -->
+                <path d="M37 133 Q51 113 70 128 Q91 110 110 129
+                         Q133 111 151 128 Q176 108 193 128
+                         Q217 111 235 129 Q254 113 265 135
+                         L255 154 L45 154 Z"
+                      fill="#55ae42" stroke="#33772c" stroke-width="4"/>
+                <!-- Queijo -->
+                <path d="M48 146 L252 146 L237 175 L211 164
+                         L185 183 L161 163 L136 181 L111 164
+                         L83 178 L70 160 Z"
+                      fill="#ffcf35" stroke="#dc991b" stroke-width="4"/>
+                <!-- Carne -->
+                <path d="M48 163 Q50 146 72 151
+                         Q100 143 124 153 Q151 143 174 153
+                         Q202 143 226 153 Q248 148 252 164
+                         L246 190 Q150 208 54 190 Z"
+                      fill="#71351f" stroke="#482016" stroke-width="5"/>
+                <path d="M68 169 Q120 180 166 168 T233 170"
+                      fill="none" stroke="#a65a32" stroke-width="5"
+                      stroke-linecap="round"/>
+                <!-- Tomate -->
+                <path d="M51 191 Q150 176 249 191
+                         L242 210 Q150 225 58 210 Z"
+                      fill="#ee4538" stroke="#b52620" stroke-width="4"/>
+                <!-- Pão de baixo -->
+                <path d="M53 207 Q150 225 247 207
+                         L244 225 Q236 246 211 248
+                         L89 248 Q64 246 56 225 Z"
+                      fill="#eaa13d" stroke="#a95c1b" stroke-width="5"/>
+                <path d="M75 226 Q150 241 225 226"
+                      fill="none" stroke="#ffd77b" stroke-width="5"
+                      stroke-linecap="round"/>
+            </svg>
+        </button>
+        <p class="hint">👆 CLICA NO HAMBÚRGUER!</p>
+    </div>
+
+    <section class="progress-box">
+        <div class="progress-label">
+            <span>💩 Até à diarreia...</span>
+            <span id="progressText">0 / 1.000.000</span>
+        </div>
+        <div class="progress-bg">
+            <div id="progress"></div>
+        </div>
+    </section>
+
+    <h2 class="section-title">🛒 Loja de Upgrades</h2>
+    <p class="section-subtitle">
+        Gasta os teus cliques para ganhares ainda mais cliques!
+    </p>
+
+    <section id="upgrades"></section>
+
+    <button id="reset">🔄 Recomeçar jogo</button>
+
+    <footer>
+        Hambúrguer Clicker © 2026 · Começa a clicar por tua conta e risco.
+    </footer>
+</main>
+
+<div id="toast" role="status"></div>
+
+<div id="ending" role="dialog" aria-modal="true"
+     aria-labelledby="endingTitle">
+    <div class="ending-card">
+        <div class="poop">💩</div>
+        <h2 id="endingTitle">MISSÃO CUMPRIDA!</h2>
+        <p>
+            CHEGASTE A 1.000.000 DE CLIQUES!
+        </p>
+        <p>
+            🏆 Parabéns! Clicaste tanto que vais ficar com diarreia!
+        </p>
+        <p>🚽 A casa de banho está à tua espera!</p>
+        <button id="closeEnding">Aceitar o meu destino 😂</button>
+    </div>
+</div>
+
+<script>
+"use strict";
+
+const GOAL = 1000000;
+
+const upgrades = [
+    {
+        name: "Dedo de Ferro",
+        icon: "💪",
+        description: "+1 clique por toque",
+        baseCost: 50,
+        bonus: 1
+    },
+    {
+        name: "Molho Secreto",
+        icon: "🥫",
+        description: "+5 cliques por toque",
+        baseCost: 300,
+        bonus: 5
+    },
+    {
+        name: "Hambúrguer Duplo",
+        icon: "🍔",
+        description: "+25 cliques por toque",
+        baseCost: 2000,
+        bonus: 25
+    },
+    {
+        name: "Hambúrguer Gigante",
+        icon: "🍔",
+        description: "+100 cliques por toque",
+        baseCost: 15000,
+        bonus: 100
+    },
+    {
+        name: "Fábrica de Hambúrgueres",
+        icon: "🏭",
+        description: "+500 cliques por toque",
+        baseCost: 100000,
+        bonus: 500
+    },
+    {
+        name: "Hambúrguer Nuclear",
+        icon: "☢️",
+        description: "+2.500 cliques por toque",
+        baseCost: 750000,
+        bonus: 2500
+    }
+];
+
+let score = 0;
+let power = 1;
+let owned = Array(upgrades.length).fill(0);
+let endingSeen = false;
+let toastTimer;
+
+const $ = id => document.getElementById(id);
+
+function formatNumber(number) {
+    return Math.floor(number).toLocaleString("pt-PT");
+}
+
+function costOf(index) {
+    return Math.floor(
+        upgrades[index].baseCost *
+        Math.pow(1.65, owned[index])
+    );
+}
+
+function saveGame() {
+    try {
+        localStorage.setItem("hamburguerClickerSave", JSON.stringify({
+            score,
+            power,
+            owned,
+            endingSeen
+        }));
+    } catch (error) {
+        // O jogo continua mesmo se o navegador bloquear o salvamento.
+    }
+}
+
+function loadGame() {
+    try {
+        const raw = localStorage.getItem("hamburguerClickerSave");
+        if (!raw) return;
+
+        const data = JSON.parse(raw);
+
+        if (
+            !data ||
+            !Number.isSafeInteger(data.score) ||
+            data.score < 0 ||
+            !Number.isSafeInteger(data.power) ||
+            data.power < 1 ||
+            !Array.isArray(data.owned) ||
+            data.owned.length !== upgrades.length ||
+            !data.owned.every(n =>
+                Number.isSafeInteger(n) && n >= 0
+            )
+        ) {
+            return;
+        }
+
+        score = Math.min(data.score, GOAL);
+        owned = data.owned;
+        power = 1 + owned.reduce(
+            (total, count, index) =>
+                total + count * upgrades[index].bonus,
+            0
+        );
+        endingSeen = data.endingSeen === true;
+    } catch (error) {
+        // Se o salvamento estiver danificado, começa um jogo novo.
+    }
+}
+
+function showToast(message) {
+    $("toast").textContent = message;
+    $("toast").classList.add("show");
+
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+        $("toast").classList.remove("show");
+    }, 1800);
+}
+
+function checkEnding() {
+    if (score >= GOAL) {
+        score = GOAL;
+
+        if (!endingSeen) {
+            endingSeen = true;
+            $("ending").classList.add("show");
+        }
+    }
+}
+
+function updateUI() {
+    $("score").textContent = formatNumber(score);
+    $("power").textContent = formatNumber(power);
+
+    const totalUpgrades = owned.reduce((a, b) => a + b, 0);
+    $("upgradeCount").textContent = formatNumber(totalUpgrades);
+
+    $("progressText").textContent =
+        formatNumber(score) + " / " + formatNumber(GOAL);
+
+    $("progress").style.width =
+        Math.min(100, (score / GOAL) * 100) + "%";
+
+    upgrades.forEach((upgrade, index) => {
+        const cost = costOf(index);
+        const button = $("buy-" + index);
+
+        $("owned-" + index).textContent = owned[index];
+        $("cost-" + index).textContent = formatNumber(cost);
+
+        button.disabled = score < cost || score >= GOAL;
+    });
+
+    saveGame();
+}
+
+function createShop() {
+    const shop = $("upgrades");
+    shop.innerHTML = "";
+
+    upgrades.forEach((upgrade, index) => {
+        const card = document.createElement("article");
+        card.className = "upgrade";
+
+        const icon = document.createElement("div");
+        icon.className = "upgrade-icon";
+        icon.textContent = upgrade.icon;
+
+        const title = document.createElement("h3");
+        title.textContent = upgrade.name;
+
+        const description = document.createElement("p");
+        description.textContent = upgrade.description;
+
+        const ownedText = document.createElement("p");
+        ownedText.innerHTML = 'Comprados: <strong id="owned-' +
+            index + '">0</strong>';
+
+        const button = document.createElement("button");
+        button.className = "buy";
+        button.id = "buy-" + index;
+
+        button.innerHTML =
+            'Comprar · <span id="cost-' + index + '">' +
+            formatNumber(upgrade.baseCost) + '</span> 🍔';
+
+        button.addEventListener("click", () => buyUpgrade(index));
+
+        card.append(icon, title, description, ownedText, button);
+        shop.appendChild(card);
+    });
+}
+
+function buyUpgrade(index) {
+    const cost = costOf(index);
+
+    if (score < cost || score >= GOAL) {
+        showToast("Não tens cliques suficientes! 🍔");
+        return;
+    }
+
+    score -= cost;
+    owned[index]++;
+    power += upgrades[index].bonus;
+
+    showToast(
+        upgrades[index].icon + " Upgrade comprado! +" +
+        formatNumber(upgrades[index].bonus) + " por clique!"
+    );
+
+    updateUI();
+}
+
+function clickBurger(event) {
+    if (score >= GOAL) {
+        showToast("Já atingiste o milhão! 💩");
+        return;
+    }
+
+    score = Math.min(GOAL, score + power);
+
+    const area = $("burgerArea");
+    const rect = area.getBoundingClientRect();
+
+    const x = event.clientX
+        ? event.clientX - rect.left
+        : rect.width / 2;
+
+    const y = event.clientY
+        ? event.clientY - rect.top
+        : 60;
+
+    const float = document.createElement("div");
+    float.className = "float-text";
+    float.textContent = "+" + formatNumber(power);
+    float.style.left = Math.max(0, Math.min(rect.width - 90, x)) + "px";
+    float.style.top = Math.max(0, y - 15) + "px";
+
+    area.appendChild(float);
+    setTimeout(() => float.remove(), 850);
+
+    updateUI();
+    checkEnding();
+}
+
+$("burger").addEventListener("click", clickBurger);
+
+$("closeEnding").addEventListener("click", () => {
+    $("ending").classList.remove("show");
+});
+
+$("reset").addEventListener("click", () => {
+    const confirmed = confirm(
+        "Tens a certeza? Vais perder todos os cliques e upgrades!"
+    );
+
+    if (!confirmed) return;
+
+    score = 0;
+    power = 1;
+    owned = Array(upgrades.length).fill(0);
+    endingSeen = false;
+
+    $("ending").classList.remove("show");
+
+    updateUI();
+    showToast("Novo jogo! Vamos aos hambúrgueres! 🍔");
+});
+
+loadGame();
+createShop();
+updateUI();
+
+if (score >= GOAL && endingSeen) {
+    $("ending").classList.remove("show");
+}
+</script>
+
+</body>
+</html>
