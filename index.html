@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hambúrguer Clicker 🍔</title>
+
+<style>
+:root {
+    --orange: #ff8a24;
+    --yellow: #ffd45c;
+    --dark: #382116;
+    --cream: #fff5df;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: Arial, Helvetica, sans-serif;
+    color: var(--dark);
+    background:
+        radial-gradient(circle at 20% 15%, #fff1c2 0, transparent 35%),
+        linear-gradient(135deg, #ffe4a3, #ffb45d);
+    text-align: center;
+    overflow-x: hidden;
+}
+
+header { padding: 22px 12px 10px; }
+
+h1 {
+    font-size: clamp(28px, 6vw, 48px);
+    margin: 0;
+    font-weight: 900;
+    text-shadow: 2px 3px 0 #fff;
+}
+
+.subtitle {
+    margin-top: 8px;
+    color: #754323;
+}
+
+.container {
+    width: min(900px, 94%);
+    margin: auto;
+    padding-bottom: 35px;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.stat {
+    background: #fffaf0;
+    padding: 14px 5px;
+    border: 3px solid white;
+    border-radius: 18px;
+    box-shadow: 0 5px 0 #dca04f;
+}
+
+.stat small {
+    display: block;
+    font-weight: bold;
+    color: #96623a;
+    margin-bottom: 6px;
+}
+
+.stat strong {
+    font-size: clamp(17px, 4vw, 26px);
+    overflow-wrap: anywhere;
+}
+
+.burger-area {
+    position: relative;
+    padding: 12px 0 20px;
+}
+
+#burger {
+    width: clamp(190px, 55vw, 310px);
+    height: clamp(190px, 55vw, 310px);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle, #fff9dc, #ffd77c);
+    box-shadow: 0 12px 0 #dc9142, 0 18px 25px #9c5a2b55;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: transform .08s, box-shadow .08s;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+#burger:active {
+    transform: translateY(8px) scale(.96);
+    box-shadow: 0 4px 0 #dc9142, 0 8px 15px #9c5a2b55;
+}
+
+#burger svg {
+    width: 88%;
+    height: 88%;
+    overflow: visible;
+    pointer-events: none;
+}
+
+.hint {
+    font-weight: bold;
+    color: #754323;
+    margin: 20px 0 5px;
+}
+
+.progress-box {
+    background: #fffaf0;
+    padding: 15px;
+    border-radius: 18px;
+    margin: 15px 0 24px;
+    box-shadow: 0 5px 0 #dca04f;
+}
+
+.progress-label {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.progress-bg {
+    height: 22px;
+    border-radius: 20px;
+    background: #ead8b8;
+    overflow: hidden;
+    border: 2px solid #e2c18e;
+}
+
+#progress {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, #65c653, #b8ed55);
+    border-radius: 20px;
+    transition: width .2s;
+}
+
+.section-title {
+    font-size: 26px;
+    margin: 25px 0 5px;
+}
+
+.section-subtitle {
+    color: #754323;
+    margin-bottom: 18px;
+}
+
+#upgrades {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.upgrade {
+    background: #fffaf0;
+    border: 3px solid white;
+    border-radius: 18px;
+    padding: 15px 10px;
+    box-shadow: 0 5px 0 #dca04f;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+}
+
+.upgrade-icon { font-size: 36px; }
+
+.upgrade h3 {
+    margin: 0;
+    font-size: 17px;
+}
+
+.upgrade p {
+    margin: 0;
+    font-size: 13px;
+    color: #79583e;
+    line-height: 1.4;
+}
+
+.buy {
+    width: 100%;
+    padding: 11px 5px;
+    border: none;
+    border-radius: 12px;
+    color: white;
+    background: var(--orange);
+    font-size: 14px;
+    font-weight: 900;
+    cursor: pointer;
+    box-shadow: 0 4px 0 #c65b11;
+}
+
+.buy:disabled {
+    background: #c9bca8;
+    box-shadow: 0 4px 0 #a99b87;
+    cursor: not-allowed;
+}
+
+footer {
+    margin: 30px 0 5px;
+    color: #79583e;
+    font-size: 12px;
+}
+
+#toast {
+    position: fixed;
+    top: 15px;
+    left: 50%;
+    transform: translate(-50%, -150%);
+    background: #382116;
+    color: white;
+    padding: 13px 22px;
+    border-radius: 15px;
+    z-index: 30;
+    font-weight: bold;
+    transition: transform .3s;
+    max-width: 90%;
+}
+
+#toast.show { transform: translate(-50%, 0); }
+
+.float-text {
+    position: absolute;
+    pointer-events: none;
+    font-size: 25px;
+    font-weight: 900;
+    color: #e85d04;
+    text-shadow: 1px 2px white;
+    animation: floatUp .8s forwards;
+    z-index: 2;
+}
+
+@keyframes floatUp {
+    from { opacity: 1; transform: translateY(0) scale(.8); }
+    to { opacity: 0; transform: translateY(-85px) scale(1.2); }
+}
+
+#ending {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: #28140df2;
+    z-index: 40;
+}
+
+#ending.show {
+    display: flex;
+    animation: appear .4s;
+}
+
+.ending-card {
+    max-width: 470px;
+    width: 100%;
+    background: #fff1d1;
+    border: 5px solid #ff9d32;
+    border-radius: 28px;
+    padding: 25px 20px;
+    box-shadow: 0 0 40px #ff7a26aa;
+    animation: bounce .7s;
+}
+
+.ending-card .poop { font-size: 85px; }
+
+.ending-card h2 {
+    font-size: 31px;
+    color: #d84b13;
+    margin: 10px 0;
+}
+
+.ending-card p { line-height: 1.6; }
+
+#closeEnding, #reset {
+    border: none;
+    border-radius: 12px;
+    padding: 12px 20px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#closeEnding {
+    background: #ff8a24;
+    color: white;
+}
+
+#reset {
+    margin-top: 25px;
+    background: #73472c;
+    color: white;
+}
+
+#adminButton {
+    margin: 10px;
+    padding: 9px 18px;
+    border: 2px solid #73472c;
+    border-radius: 10px;
+    background: #382116;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#adminPanel {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    background: #000c;
+    align-items: center;
+    justify-content: center;
+    padding: 15px;
+}
+
+.admin-card {
+    background: #fff5df;
+    padding: 22px;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 440px;
+    max-height: 90vh;
+    overflow-y: auto;
+    border: 4px solid #ff8a24;
+    color: #382116;
+    text-align: left;
+}
+
+.admin-card h2, .admin-card > p {
+    text-align: center;
+}
+
+.admin-card h2 { margin-top: 0; }
+
+.admin-card .buy {
+    display: block;
+    margin-top: 10px;
+    padding: 12px 8px;
+}
+
+.admin-card hr {
+    border: 0;
+    border-top: 2px solid #ead2ad;
+    margin: 20px 0;
+}
+
+.admin-card label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.admin-card input {
+    width: 100%;
+    padding: 12px;
+    margin: 5px 0 8px;
+    border: 2px solid #dca04f;
+    border-radius: 10px;
+    font-size: 16px;
+}
+
+.admin-status {
+    padding: 10px;
+    border-radius: 10px;
+    background: #ffebc6;
+    font-size: 13px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+
+.admin-close { background: #73472c !important; }
+
+@keyframes appear {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes bounce {
+    0% { transform: scale(.5); }
+    75% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+@media (max-width: 450px) {
+    .stats { gap: 6px; }
+    .stat { padding: 12px 2px; }
+    #upgrades { gap: 9px; }
+    .upgrade { padding: 12px 7px; }
+    .upgrade h3 { font-size: 15px; }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>🍔 Hambúrguer Clicker</h1>
+    <p class="subtitle">Clica no hambúrguer. Fica rico. Arrepende-te.</p>
+    <button id="adminButton">🔐 ADM</button>
+</header>
+
+<main class="container">
+
+    <section class="stats">
+        <div class="stat">
+            <small>🍔 CLIQUES</small>
+            <strong id="score">0</strong>
+        </div>
+        <div class="stat">
+            <small>⚡ POR CLIQUE</small>
+            <strong id="power">1</strong>
+        </div>
+        <div class="stat">
+            <small>🛠️ UPGRADES</small>
+            <strong id="upgradeCount">0</strong>
+        </div>
+    </section>
+
+    <div class="burger-area" id="burgerArea">
+        <button id="burger" aria-label="Clicar no hambúrguer">
+            <svg viewBox="0 0 300 300" role="img"
+                 aria-label="Um hambúrguer delicioso">
+                <ellipse cx="150" cy="258" rx="105" ry="17"
+                         fill="#9b5a27" opacity=".18"/>
+                <path d="M43 133 C43 58 90 28 150 28
+                         C210 28 257 58 257 133 Z"
+                      fill="#eaa13d" stroke="#a95c1b" stroke-width="5"/>
+                <path d="M53 112 C65 65 101 43 150 42
+                         C199 43 235 65 247 112"
+                      fill="none" stroke="#ffd77b" stroke-width="9"
+                      stroke-linecap="round"/>
+                <g fill="#fff0b5">
+                    <ellipse cx="105" cy="66" rx="5" ry="9"
+                             transform="rotate(-30 105 66)"/>
+                    <ellipse cx="145" cy="53" rx="5" ry="9"
+                             transform="rotate(15 145 53)"/>
+                    <ellipse cx="183" cy="65" rx="5" ry="9"
+                             transform="rotate(30 183 65)"/>
+                    <ellipse cx="216" cy="88" rx="5" ry="9"
+                             transform="rotate(-20 216 88)"/>
+                    <ellipse cx="80" cy="96" rx="5" ry="9"
+                             transform="rotate(25 80 96)"/>
+                    <ellipse cx="130" cy="91" rx="5" ry="9"
+                             transform="rotate(-15 130 91)"/>
+                    <ellipse cx="171" cy="96" rx="5" ry="9"
+                             transform="rotate(20 171 96)"/>
+                </g>
+                <path d="M37 133 Q51 113 70 128 Q91 110 110 129
+                         Q133 111 151 128 Q176 108 193 128
+                         Q217 111 235 129 Q254 113 265 135
+                         L255 154 L45 154 Z"
+                      fill="#55ae42" stroke="#33772c" stroke-width="4"/>
+                <path d="M48 146 L252 146 L237 175 L211 164
+                         L185 183 L161 163 L136 181 L111 164
+                         L83 178 L70 160 Z"
+                      fill="#ffcf35" stroke="#dc991b" stroke-width="4"/>
+                <path d="M48 163 Q50 146 72 151
+                         Q100 143 124 153 Q151 143 174 153
+                         Q202 143 226 153 Q248 148 252 164
+                         L246 190 Q150 208 54 190 Z"
+                      fill="#71351f" stroke="#482016" stroke-width="5"/>
+                <path d="M68 169 Q120 180 166 168 T233 170"
+                      fill="none" stroke="#a65a32" stroke-width="5"
+                      stroke-linecap="round"/>
+                <path d="M51 191 Q150 176 249 191
+                         L242 210 Q150 225 58 210 Z"
+                      fill="#ee4538" stroke="#b52620" stroke-width="4"/>
+                <path d="M53 207 Q150 225 247 207
+                         L244 225 Q236 246 211 248
+                         L89 248 Q64 246 56 225 Z"
+                      fill="#eaa13d" stroke="#a95c1b" stroke-width="5"/>
+                <path d="M75 226 Q150 241 225 226"
+                      fill="none" stroke="#ffd77b" stroke-width="5"
+                      stroke-linecap="round"/>
+            </svg>
+        </button>
+        <p class="hint">👆 CLICA NO HAMBÚRGUER!</p>
+    </div>
+
+    <section class="progress-box">
+        <div class="progress-label">
+            <span>💩 Até à diarreia...</span>
+            <span id="progressText">0 / 1.000.000</span>
+        </div>
+        <div class="progress-bg">
+            <div id="progress"></div>
+        </div>
+    </section>
+
+    <h2 class="section-title">🛒 Loja de Upgrades</h2>
+    <p class="section-subtitle">
+        Gasta os teus cliques para ganhares ainda mais cliques!
+    </p>
+
+    <section id="upgrades"></section>
+
+    <button id="reset">🔄 Recomeçar jogo</button>
+
+    <footer>
+        Hambúrguer Clicker © 2026 · Começa a clicar por tua conta e risco.
+    </footer>
+</main>
+
+<!-- PAINEL SECRETO ADM -->
+<div id="adminPanel" role="dialog" aria-modal="true"
+     aria-labelledby="adminTitle">
+    <div class="admin-card">
+        <h2 id="adminTitle">🔐 Painel ADM</h2>
+        <p>Bem-vindo, administrador!</p>
+
+        <div class="admin-status" id="adminStatus">
+            Carrega nos botões para ativar ou desativar poderes.
+        </div>
+
+        <button class="buy" id="infiniteMoneyButton">
+            ♾️ Hambúrgueres infinitos: DESLIGADO
+        </button>
+
+        <button class="buy" id="infinitePowerButton">
+            ⚡ Poder máximo: DESLIGADO
+        </button>
+
+        <button class="buy" id="freeUpgradesButton">
+            🛒 Upgrades grátis: DESLIGADO
+        </button>
+
+        <button class="buy" id="unlockAllButton">
+            🔓 Desbloquear todos os upgrades
+        </button>
+
+        <hr>
+
+        <label for="admGoal">
+            🎯 Cliques necessários para a diarreia
+        </label>
+        <input id="admGoal" type="number" min="1"
+               max="2000000000000" value="1000000">
+
+        <button class="buy" id="setGoalButton">
+            Aplicar nova meta
+        </button>
+
+        <hr>
+
+        <label for="admAmount">
+            🍔 Quantidade a adicionar ou retirar
+        </label>
+        <input id="admAmount" type="number" min="0"
+               value="1000000">
+
+        <button class="buy" id="addMoneyButton">
+            ➕ Adicionar hambúrgueres
+        </button>
+
+        <button class="buy" id="removeMoneyButton">
+            ➖ Retirar hambúrgueres
+        </button>
+
+        <button class="buy admin-close" id="closeAdminButton">
+            ❌ Fechar painel ADM
+        </button>
+    </div>
+</div>
+
+<div id="toast" role="status"></div>
+
+<div id="ending" role="dialog" aria-modal="true"
+     aria-labelledby="endingTitle">
+    <div class="ending-card">
+        <div class="poop">💩</div>
+        <h2 id="endingTitle">MISSÃO CUMPRIDA!</h2>
+        <p>CHEGASTE À META DE CLIQUES!</p>
+        <p>🏆 Parabéns! Clicaste tanto que vais ficar com diarreia!</p>
+        <p>🚽 A casa de banho está à tua espera!</p>
+        <button id="closeEnding">Aceitar o meu destino 😂</button>
+    </div>
+</div>
+
+<script>
+"use strict";
+
+// ==========================
+// CONFIGURAÇÃO DO JOGO
+// ==========================
+
+const DEFAULT_GOAL = 1000000;
+const MAX_GOAL = 2000000000000;
+const SAVE_KEY = "hamburguerClickerSave";
+
+let GOAL = DEFAULT_GOAL;
+let score = 0;
+let power = 1;
+let owned = [0, 0, 0, 0, 0, 0];
+
+let infiniteMoney = false;
+let infinitePower = false;
+let freeUpgrades = false;
+let adminUnlocked = false;
+let endingSeen = false;
+let toastTimer;
+
+const $ = id => document.getElementById(id);
+
+const upgrades = [
+    {
+        name: "Dedo de Ferro",
+        icon: "💪",
+        description: "+1 clique por toque",
+        baseCost: 50,
+        bonus: 1
+    },
+    {
+        name: "Molho Secreto",
+        icon: "🥫",
+        description: "+5 cliques por toque",
+        baseCost: 300,
+        bonus: 5
+    },
+    {
+        name: "Hambúrguer Duplo",
+        icon: "🍔",
+        description: "+25 cliques por toque",
+        baseCost: 2000,
+        bonus: 25
+    },
+    {
+        name: "Hambúrguer Gigante",
+        icon: "🍔",
+        description: "+100 cliques por toque",
+        baseCost: 15000,
+        bonus: 100
+    },
+    {
+        name: "Fábrica de Hambúrgueres",
+        icon: "🏭",
+        description: "+500 cliques por toque",
+        baseCost: 100000,
+        bonus: 500
+    },
+    {
+        name: "Hambúrguer Nuclear",
+        icon: "☢️",
+        description: "+2.500 cliques por toque",
+        baseCost: 750000,
+        bonus: 2500
+    }
+];
+
+// ==========================
+// NÚMEROS E PREÇOS
+// ==========================
+
+function formatNumber(number) {
+    return Math.floor(number).toLocaleString("pt-PT");
+}
+
+function costOf(index) {
+    const cost = upgrades[index].baseCost *
+        Math.pow(1.65, owned[index]);
+
+    return Math.min(
+        Number.MAX_SAFE_INTEGER,
+        Math.floor(cost)
+    );
+}
+
+function calculatePower() {
+    return 1 + owned.reduce(
+        (total, count, index) =>
+            total + count * upgrades[index].bonus,
+        0
+    );
+}
+
+function effectivePower() {
+    return infinitePower
+        ? Number.MAX_SAFE_INTEGER
+        : power;
+}
+
+// ==========================
+// GUARDAR E CARREGAR
+// ==========================
+
+function saveGame() {
+    try {
+        localStorage.setItem(SAVE_KEY, JSON.stringify({
+            score,
+            owned,
+            GOAL,
+            infiniteMoney,
+            infinitePower,
+            freeUpgrades,
+            endingSeen
+        }));
+    } catch (error) {
+        // O jogo continua a funcionar sem salvamento.
+    }
+}
+
+function loadGame() {
+    try {
+        const raw = localStorage.getItem(SAVE_KEY);
+        if (!raw) return;
+
+        const data = JSON.parse(raw);
+
+        if (!data || !Number.isSafeInteger(data.score) ||
+            data.score < 0) {
+            return;
+        }
+
+        if (!Array.isArray(data.owned) ||
+            data.owned.length !== upgrades.length ||
+            !data.owned.every(n =>
+                Number.isSafeInteger(n) && n >= 0
+            )) {
+            return;
+        }
+
+        score = Math.min(data.score, MAX_GOAL);
+        owned = data.owned;
+        power = calculatePower();
+
+        if (Number.isSafeInteger(data.GOAL) &&
+            data.GOAL >= 1 && data.GOAL <= MAX_GOAL) {
+            GOAL = data.GOAL;
+        }
+
+        infiniteMoney = data.infiniteMoney === true;
+        infinitePower = data.infinitePower === true;
+        freeUpgrades = data.freeUpgrades === true;
+        endingSeen = data.endingSeen === true;
+
+    } catch (error) {
+        // Se os dados estiverem danificados, inicia um jogo novo.
+    }
+}
+
+// ==========================
+// NOTIFICAÇÕES
+// ==========================
+
+function showToast(message) {
+    $("toast").textContent = message;
+    $("toast").classList.add("show");
+
+    clearTimeout(toastTimer);
+
+    toastTimer = setTimeout(() => {
+        $("toast").classList.remove("show");
+    }, 1800);
+}
+
+// ==========================
+// LOJA
+// ==========================
+
+function createShop() {
+    const shop = $("upgrades");
+    shop.innerHTML = "";
+
+    upgrades.forEach((upgrade, index) => {
+        const card = document.createElement("article");
+        card.className = "upgrade";
+
+        const icon = document.createElement("div");
+        icon.className = "upgrade-icon";
+        icon.textContent = upgrade.icon;
+
+        const title = document.createElement("h3");
+        title.textContent = upgrade.name;
+
+        const description = document.createElement("p");
+        description.textContent = upgrade.description;
+
+        const ownedText = document.createElement("p");
+        ownedText.append("Comprados: ");
+
+        const ownedNumber = document.createElement("strong");
+        ownedNumber.id = "owned-" + index;
+        ownedNumber.textContent = "0";
+        ownedText.appendChild(ownedNumber);
+
+        const button = document.createElement("button");
+        button.className = "buy";
+        button.id = "buy-" + index;
+
+        button.innerHTML =
+            'Comprar · <span id="cost-' + index + '"></span> 🍔';
+
+        button.addEventListener("click", () => buyUpgrade(index));
+
+        card.append(
+            icon, title, description, ownedText, button
+        );
+
+        shop.appendChild(card);
+    });
+}
+
+function buyUpgrade(index) {
+    const cost = costOf(index);
+
+    const canBuyFree = infiniteMoney || freeUpgrades;
+
+    if ((!canBuyFree && score < cost) || score >= GOAL) {
+        showToast(
+            score >= GOAL
+                ? "Já atingiste a meta! 💩"
+                : "Não tens cliques suficientes! 🍔"
+        );
+        return;
+    }
+
+    if (!canBuyFree) {
+        score -= cost;
+    }
+
+    owned[index]++;
+    power = calculatePower();
+
+    showToast(
+        upgrades[index].icon + " Upgrade comprado! +" +
+        formatNumber(upgrades[index].bonus) + " por clique!"
+    );
+
+    updateUI();
+}
+
+// ==========================
+// ATUALIZAR INTERFACE
+// ==========================
+
+function updateUI() {
+    power = calculatePower();
+
+    $("score").textContent = infiniteMoney
+        ? "∞"
+        : formatNumber(score);
+
+    $("power").textContent = infinitePower
+        ? "∞"
+        : formatNumber(power);
+
+    const totalUpgrades = owned.reduce(
+        (total, count) => total + count, 0
+    );
+
+    $("upgradeCount").textContent = formatNumber(totalUpgrades);
+
+    $("progressText").textContent =
+        formatNumber(Math.min(score, GOAL)) +
+        " / " + formatNumber(GOAL);
+
+    $("progress").style.width =
+        Math.min(100, (score / GOAL) * 100) + "%";
+
+    upgrades.forEach((upgrade, index) => {
+        const cost = costOf(index);
+        const button = $("buy-" + index);
+
+        $("owned-" + index).textContent =
+            formatNumber(owned[index]);
+
+        $("cost-" + index).textContent =
+            formatNumber(cost);
+
+        button.disabled =
+            ((!infiniteMoney && !freeUpgrades && score < cost)
+            || score >= GOAL);
+    });
+
+    $("infiniteMoneyButton").textContent =
+        "♾️ Hambúrgueres infinitos: " +
+        (infiniteMoney ? "LIGADO" : "DESLIGADO");
+
+    $("infinitePowerButton").textContent =
+        "⚡ Poder máximo: " +
+        (infinitePower ? "LIGADO" : "DESLIGADO");
+
+    $("freeUpgradesButton").textContent =
+        "🛒 Upgrades grátis: " +
+        (freeUpgrades ? "LIGADO" : "DESLIGADO");
+
+    $("adminStatus").textContent =
+        "Meta atual: " + formatNumber(GOAL) +
+        " | Dinheiro infinito: " + (infiniteMoney ? "SIM" : "NÃO") +
+        " | Poder máximo: " + (infinitePower ? "SIM" : "NÃO") +
+        " | Upgrades grátis: " + (freeUpgrades ? "SIM" : "NÃO");
+
+    saveGame();
+}
+
+// ==========================
+// CLIQUES NO HAMBÚRGUER
+// ==========================
+
+function checkEnding() {
+    if (score >= GOAL) {
+        score = GOAL;
+
+        if (!endingSeen) {
+            endingSeen = true;
+            $("ending").classList.add("show");
+        }
+
+        updateUI();
+    }
+}
+
+function clickBurger(event) {
+    if (score >= GOAL) {
+        showToast("Já atingiste a meta! 💩");
+        return;
+    }
+
+    const amount = effectivePower();
+    score = Math.min(GOAL, score + amount);
+
+    const area = $("burgerArea");
+    const rect = area.getBoundingClientRect();
+
+    const x = event.clientX
+        ? event.clientX - rect.left
+        : rect.width / 2;
+
+    const y = event.clientY
+        ? event.clientY - rect.top
+        : 60;
+
+    const float = document.createElement("div");
+    float.className = "float-text";
+    float.textContent = "+" + formatNumber(amount);
+
+    float.style.left =
+        Math.max(0, Math.min(rect.width - 90, x)) + "px";
+
+    float.style.top = Math.max(0, y - 15) + "px";
+
+    area.appendChild(float);
+
+    setTimeout(() => float.remove(), 850);
+
+    updateUI();
+    checkEnding();
+}
+
+// ==========================
+// ADMINISTRADOR
+// ==========================
+
+function openAdmin() {
+    if (!adminUnlocked) {
+        const password = prompt("Introduz o código secreto ADM:");
+
+        if (password !== "4578") {
+            if (password !== null) {
+                alert("❌ Código incorreto!");
+            }
+            return;
+        }
+
+        adminUnlocked = true;
+        showToast("✅ Acesso ADM autorizado!");
+    }
+
+    $("admGoal").value = GOAL;
+    $("adminPanel").style.display = "flex";
+    updateUI();
+}
+
+function admInfiniteMoney() {
+    infiniteMoney = !infiniteMoney;
+
+    showToast(
+        infiniteMoney
+            ? "♾️ Hambúrgueres infinitos ativados!"
+            : "🍔 Hambúrgueres infinitos desativados!"
+    );
+
+    updateUI();
+}
+
+function admInfinitePower() {
+    infinitePower = !infinitePower;
+
+    showToast(
+        infinitePower
+            ? "⚡ Poder máximo ativado!"
+            : "⚡ Poder normal restaurado!"
+    );
+
+    updateUI();
+}
+
+function admFreeUpgrades() {
+    freeUpgrades = !freeUpgrades;
+
+    showToast(
+        freeUpgrades
+            ? "🛒 Upgrades grátis ativados!"
+            : "🛒 Upgrades grátis desativados!"
+    );
+
+    updateUI();
+}
+
+function admUnlockAll() {
+    // Desbloqueia todos os tipos de upgrade.
+    owned = owned.map(count => Math.max(count, 1));
+    power = calculatePower();
+
+    showToast("🔓 Todos os upgrades desbloqueados!");
+    updateUI();
+}
+
+function admSetGoal() {
+    const value = Number($("admGoal").value);
+
+    if (!Number.isSafeInteger(value) ||
+        value < 1 || value > MAX_GOAL) {
+        alert("Escolhe uma meta entre 1 e 2.000.000.000.000.");
+        return;
+    }
+
+    GOAL = value;
+
+    // Permite mostrar o final novamente se a meta for alterada.
+    endingSeen = false;
+
+    $("ending").classList.remove("show");
+
+    showToast("🎯 Nova meta: " + formatNumber(GOAL) + " cliques!");
+
+    updateUI();
+    checkEnding();
+}
+
+function getAdminAmount() {
+    const amount = Number($("admAmount").value);
+
+    if (!Number.isSafeInteger(amount) || amount < 0) {
+        alert("Introduz uma quantidade válida.");
+        return null;
+    }
+
+    return amount;
+}
+
+function admAddMoney() {
+    const amount = getAdminAmount();
+    if (amount === null) return;
+
+    score = Math.min(MAX_GOAL, score + amount);
+
+    showToast("🍔 Hambúrgueres adicionados!");
+    updateUI();
+    checkEnding();
+}
+
+function admRemoveMoney() {
+    const amount = getAdminAmount();
+    if (amount === null) return;
+
+    score = Math.max(0, score - amount);
+
+    // Se retirar cliques antes do final, permite voltar a ativá-lo.
+    if (score < GOAL) {
+        endingSeen = false;
+        $("ending").classList.remove("show");
+    }
+
+    showToast("🍔 Hambúrgueres retirados!");
+    updateUI();
+}
+
+// ==========================
+// EVENTOS
+// ==========================
+
+$("burger").addEventListener("click", clickBurger);
+
+$("adminButton").addEventListener("click", openAdmin);
+
+$("infiniteMoneyButton").addEventListener(
+    "click", admInfiniteMoney
+);
+
+$("infinitePowerButton").addEventListener(
+    "click", admInfinitePower
+);
+
+$("freeUpgradesButton").addEventListener(
+    "click", admFreeUpgrades
+);
+
+$("unlockAllButton").addEventListener(
+    "click", admUnlockAll
+);
+
+$("setGoalButton").addEventListener(
+    "click", admSetGoal
+);
+
+$("addMoneyButton").addEventListener(
+    "click", admAddMoney
+);
+
+$("removeMoneyButton").addEventListener(
+    "click", admRemoveMoney
+);
+
+$("closeAdminButton").addEventListener("click", () => {
+    $("adminPanel").style.display = "none";
+});
+
+$("closeEnding").addEventListener("click", () => {
+    $("ending").classList.remove("show");
+});
+
+$("reset").addEventListener("click", () => {
+    const confirmed = confirm(
+        "Tens a certeza? Vais perder todos os cliques e upgrades!"
+    );
+
+    if (!confirmed) return;
+
+    score = 0;
+    power = 1;
+    owned = Array(upgrades.length).fill(0);
+
+    // A meta e os poderes ADM mantêm-se.
+    endingSeen = false;
+
+    $("ending").classList.remove("show");
+
+    updateUI();
+    showToast("Novo jogo! Vamos aos hambúrgueres! 🍔");
+});
+
+// ==========================
+// INICIAR JOGO
+// ==========================
+
+loadGame();
+createShop();
+updateUI();
+
+if (score >= GOAL && !endingSeen) {
+    checkEnding();
+}
+</script>
+
+</body>
+</html>
